@@ -17,7 +17,7 @@ library(wiqid)
 #set working directory
 # examples ...
 # JENN's COMPUTER
-# setwd("C:/Users/jrcassvc/Desktop/Sev Data/Root donuts/")
+# setwd("C:/Users/jrcassvc/Desktop/Sev Data/Root donuts/Root Donut Data & R script/")
 # AZAD's COMPUTER
 #setwd("C:/Users/vojda/OneDrive/Desktop/Root_Biomass_MS")
 # LAUREN'S COMPUTER
@@ -25,8 +25,13 @@ library(wiqid)
 
 ## DATA STEPS ----------------------------
 #import data from computer
-roots_spei<-read.csv("roots_spei_20220415.csv", stringsAsFactors = T)
-#1956 observations of 19 variables
+roots_spei<-read.csv("sev175_root_mass.csv", stringsAsFactors = T)
+#2156 observations of 21 variables
+unique(roots_spei$Site)
+
+# exclude sites of new root donuts
+roots_spei<-subset(roots_spei, Site!="EG" &  Site!="EB" & Site!="W")
+#1956 obs
 
 #add treatment information
 unique(roots_spei$Site)
