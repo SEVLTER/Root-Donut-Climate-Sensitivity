@@ -1,0 +1,22 @@
+variable name,variable definition/description, units for numeric variables or definitions of factor levels in factor variables,empty/missing value codes
+Date,Year of root collection,YYYY (range 2005 - 2021),NA
+Site,Location code for site of root donut installation,"factor with 8 levels: ""C"" = Chihuahuan Desert Shrubland Creosotebush-dominated Core site , ""DW"" =  Deep Well - Mixed grassland co-dominated by blue grama grass and black grama, ""DWB"" = Deep Well - Burned in 2009 Mixed grassland co-dominated by blue grama grass and black grama, ""F"" = Fertilizer experimental site Plains grassland dominated by blue grama grass, ""M"" = Monsoon Rainfall Manipulation Experiment (MRME) site Chihuahuan Desert grassland dominated by black grama grass, ""EB"" = Extreme Drought in Grasslands Experiment, Plains grassland dominated by blue grama grass, ""EG"" = Extreme Drought in Grasslands Experiment, Chihuahuan Desert grassland dominated by black grama grass, ""W"" = The nighttime Warming, El Niño, Nitrogen Deposition Experiment (WENNDEx) in Mixed Plains/Desert grassland with blue grama and black grama.",NA
+Sample,"Unique identifier for each physical root donut, nested within site; for experimental sites, Sample is the plot number","integer, levels 1 - 30 ; note: treatment levels are assigned in the R script",NA
+Depth,"Soil depth was the sample taken from, in a range of centimeters from the soil surface","factor with two levels: ""0-15"" or ""15-30"" units are cm",NA
+Volume,Total volume of sample,ml,NA
+Root_Weight,Dry root mass weight,mg,NA
+Notes,notes from field and lab data collection procedures,character data,NA
+wt_by_vol,Dry root mass per volume of soil sampled ,"mg/ml, formula: Root_Weight/Volume",NA
+Station_Name,Name for the nearest SEV LTER meteorological station from which SPEI and precipitation data were obtained,"factor with three levels: ""Blue Grama"", ""Deep Well"", or ""Five Points""",NA
+Latitude,Latitude for the SEV LTER location code for site of root donut installation,,NA
+Longitude,Longitude for the SEV LTER location code for site of root donut installation,,NA
+SPEI_12_May,"Standardised Precipitation Evapotranspiration Index (SPEI) 12 month integration, ending May 31 of the Date of sampling","numeric, unitless, scaled drought index, generally ranges -2 to 2",NA
+SPEI_6_May,"Standardised Precipitation Evapotranspiration Index (SPEI) 6 month integration, ending May 31 of the Date of sampling","numeric, unitless, scaled drought index, generally ranges -2 to 3",NA
+SPEI_12_Sept,"Standardised Precipitation Evapotranspiration Index (SPEI) 12 month integration, ending Sept 30 of the Date of sampling","numeric, unitless, scaled drought index, generally ranges -2 to 4",NA
+SPEI_6_Sept,"Standardised Precipitation Evapotranspiration Index (SPEI) 6 month integration, ending Sept 30 of the Date of sampling","numeric, unitless, scaled drought index, generally ranges -2 to 5",NA
+precip_annual,Cumulative annual precipitation for the Date of sampling ,mm,NA
+precip_JJAS,"Cumulative precipitation during June, July, August, September for the Date of sampling",mm,NA
+precip_FMAM,"Cumulative precipitation during February, March, April, May for the Date of sampling",mm,NA
+precip_ONDJ,"Cumulative precipitation during October, November, December, January for the Date of sampling",mm,NA
+precip_intraCV,Within-year (intra-annual) coefficient of variation in precipitation using Standard Deviation Daily Precipitation (mm) /  (Mean Daily Precipitation (mm)),"numeric, unitless",NA
+sitesampledepth,"Concatenation of Site, Sample, and Depth to provide a unique identifier for each unique root sample location","Factor data, concatenation",NA
