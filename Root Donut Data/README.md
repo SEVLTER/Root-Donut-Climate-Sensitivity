@@ -1,1 +1,1 @@
-This is the data file as a csv for climate sensitivity function analysis of SEV LTER root biomass data from root donuts.
+This is the data file as a csv for climate sensitivity function analysis of SEV LTER root biomass data from root donuts: sev_175_roo_mass.csv. Metadata are provided in csv named: sev_175_root_donut_metadata. 
