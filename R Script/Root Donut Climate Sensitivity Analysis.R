@@ -1,6 +1,6 @@
-##This script is the final code for analysis of root donut data for 
+## This script is the final code for analysis of root donut data for 
 ## Vojdani et al. manuscript -- code authors: J. Rudgers, L. Baur, A. Vojdani
-## Last updated 22 April 2023
+## Last updated 1 October 2023
 rm(list=ls(all=TRUE)) #give R a blank slate
 
 library(tidyverse)
@@ -17,7 +17,7 @@ library(wiqid)
 #set working directory
 # examples ...
 # JENN's COMPUTER
-# setwd("C:/Users/jrcassvc/Desktop/Sev Data/Root donuts/Root Donut Data & R script/")
+setwd("C:/Users/jrcassvc/Desktop/Sev Data/Root donuts/Root Donut Data & R script/")
 # AZAD's COMPUTER
 #setwd("C:/Users/vojda/OneDrive/Desktop/Root_Biomass_MS")
 # LAUREN'S COMPUTER
@@ -181,6 +181,107 @@ c_site
 ## CONTRASTS: No significant contrasts for quadratic term, 
 ## which is negative= concave downward and significantly so in all sites but M=MRME
 
+## Reviewer 2 recommendation: include year as a random effect in the model, does this alter results?
+m.poly.controls.time<- lme(log(weight_volume+10)~SPEI_12_Sept*Site*Depth2+I(SPEI_12_Sept^2)*Site*Depth2+Date,data=root_controls,random=~1|sitesample/sitesampledepth,correlation=corARMA(form=~Date|sitesample/sitesampledepth,p=2,q=0),method="ML", na.action=na.omit)
+anova(m.poly.controls.time, type="marginal")
+
+m.poly.controls.year<- lme(log(weight_volume+10)~SPEI_12_Sept*Site*Depth2+I(SPEI_12_Sept^2)*Site*Depth2+year.f,data=root_controls,random=~1|sitesample/sitesampledepth,correlation=corARMA(form=~Date|sitesample/sitesampledepth,p=2,q=0),method="ML", na.action=na.omit)
+anova(m.poly.controls.year, type="marginal")
+
+## Alternative approach #1: split by SPEI = 0, fit 2 linear (or nonlinear) relationships (Reviewer 2 recommendation)----------------
+# Note: This approaches violates the time series nature of the data and eliminates the ability to account for temporal autocorrelation 
+# because the time series is broken up
+summary(root_controls$Site)
+root_controls$ecosystem<-recode_factor(root_controls$Site,
+                                       C = "Desert shrubland",
+                                       M = "Desert grassland",
+                                       DW = "Mixed grassland",
+                                       'F' = "Plains grassland")
+
+root_controls_dry<-subset(root_controls,SPEI_12_Sept<0)
+root_controls_wet<-subset(root_controls,SPEI_12_Sept>0)
+
+#dry model selection
+m.controls.dry<- lme(log(weight_volume+10)~SPEI_12_Sept*ecosystem*Depth2,data=root_controls_dry,random=~1|sitesample/sitesampledepth,method="ML", na.action=na.omit)
+m.controls.dryQ<- lme(log(weight_volume+10)~SPEI_12_Sept*ecosystem*Depth2+I(SPEI_12_Sept^2)*ecosystem*Depth2,data=root_controls_dry,random=~1|sitesample/sitesampledepth,method="ML", na.action=na.omit)
+AICc(m.controls.dry,m.controls.dryQ)
+anova(m.controls.dryQ, type="marginal")
+rsquared(m.controls.dryQ)
+rsquared(m.controls.dry)
+#which has only one continuous predictor, a poly function of SPEI
+dry_trends<-data.frame(emtrends(m.controls.dryQ, ~ ecosystem|degree, var="SPEI_12_Sept", max.degree = 2, options = list()))
+#note: 'degree' provides estimates of linear and nonlinear
+dry_trends
+
+# create the graph - log
+ggplot(root_controls_dry,aes(x=SPEI_12_Sept,y=log(weight_volume+10),colour=ecosystem))+
+  scale_color_manual(values=c("olivedrab4","grey30","khaki3","steelblue3"))+
+  facet_grid(rows = vars(ecosystem))+ #scales="free_y")+
+  geom_point()+ 
+  #geom_smooth(formula=y~x,method="lm")+
+  geom_smooth(formula=y~poly(x,2),method="lm")+
+  xlab("SPEI aridity index")+
+  ylab(bquote('ln (Belowground net primary production) (g  '*~m^-3~y^-1*')'))+
+  theme_minimal()+
+  ylim(0,7.25)+
+ # xlim(-2,2)+
+  theme(legend.position = "none")
+
+#wet model selection
+m.controls.wet<- lme(log(weight_volume+10)~SPEI_12_Sept*ecosystem*Depth2,data=root_controls_wet,random=~1|sitesample/sitesampledepth,method="ML", na.action=na.omit)
+m.controls.wetQ<- lme(log(weight_volume+10)~SPEI_12_Sept*ecosystem*Depth2+I(SPEI_12_Sept^2)*ecosystem*Depth2,data=root_controls_wet,random=~1|sitesample/sitesampledepth,method="ML", na.action=na.omit)
+AICc(m.controls.wet,m.controls.wetQ)
+anova(m.controls.wetQ, type="marginal")
+rsquared(m.controls.wetQ)
+rsquared(m.controls.wet)
+wet_trends<-data.frame(emtrends(m.controls.wetQ, ~ ecosystem|degree, var="SPEI_12_Sept", max.degree = 2, options = list()))
+#note: 'degree' provides estimates of linear and nonlinear
+wet_trends
+
+# create the graph
+ggplot(root_controls_wet,aes(x=SPEI_12_Sept,y=log(weight_volume+10),colour=ecosystem))+
+  scale_color_manual(values=c("olivedrab4","grey30","khaki3","steelblue3"))+
+  facet_grid(rows = vars(ecosystem))+ #scales="free_y")+
+  geom_point()+
+  #geom_smooth(formula=y~x,method="lm")+
+  geom_smooth(formula=y~poly(x,2),method="lm")+
+  xlab("SPEI aridity index")+
+  ylab(bquote('ln (Belowground net primary production) (g  '*~m^-3~y^-1*')'))+
+  theme_minimal()+
+  ylim(0,7.25)+
+  # xlim(-2,2)+
+  theme(legend.position = "none")
+
+# create the graph
+ggplot(root_controls_wet,aes(x=SPEI_12_Sept,y=log(weight_volume+10),colour=ecosystem))+
+  scale_color_manual(values=c("olivedrab4","grey30","khaki3","steelblue3"))+
+  facet_grid(rows = vars(ecosystem))+ #scales="free_y")+
+  geom_point()+
+  geom_smooth(formula=y~poly(x,2),method="lm")+
+  xlab("SPEI aridity index")+
+  ylab(bquote('ln (Belowground net primary production) (g '*~m^-3~y^-1*')'))+
+  theme_minimal()+
+  ylim(0,7.25)+
+  # xlim(-2,2)+
+  theme(legend.position = "none")
+
+
+
+# additionally test if there is symmetry around SPEI = 0
+library(dplyr)
+root_controls_split<- root_controls %>% mutate(SPEI_above_below = case_when(SPEI_12_Sept < 0  ~ 'drier', SPEI_12_Sept >= 0 ~ 'wetter'))
+root_controls_split$SPEI_above_below <-as.factor(root_controls_split$SPEI_above_below)
+
+
+m.symmetryL<-lme(log(weight_volume+10)~abs(SPEI_12_Sept)*SPEI_above_below*ecosystem*Depth2,data=root_controls_split,random=~1|sitesample/sitesampledepth, method="ML",correlation=corARMA(form=~Date|sitesample/sitesampledepth,p=2,q=0), na.action=na.omit)
+m.symmetryQ<- lme(log(weight_volume+10)~abs(SPEI_12_Sept)*SPEI_above_below*ecosystem*Depth2+I(abs(SPEI_12_Sept)^2)*SPEI_above_below*ecosystem*Depth2,data=root_controls_split,random=~1|sitesample/sitesampledepth,method="ML",correlation=corARMA(form=~Date|sitesample/sitesampledepth,p=2,q=0), na.action=na.omit)
+AICc(m.symmetryL,m.symmetryQ)
+anova(m.symmetryL, type="marginal")
+anova(m.symmetryQ, type="marginal")
+symmetry_trends<-data.frame(emtrends(m.symmetryQ, ~ ecosystem|SPEI_above_below|degree, var="SPEI_12_Sept", max.degree = 2, options = list()))
+symmetry_trends
+
+
 ## Controls only - Graph across sites without depth  ---------------------------------
 ## use recode_factor to make the values of Site more meaningful for the graph
 root_controls$ecosystem<-recode_factor(root_controls$Site,
@@ -210,6 +311,21 @@ ggplot(root_controls,aes(x=SPEI_12_Sept,y=log(weight_volume+10),colour=ecosystem
   theme(legend.position = "none")
 #export graph
 ggsave("root_controls.tiff",dpi=500,device=NULL,width=4,height=10)
+
+# create the graph - raw data
+ggplot(root_controls,aes(x=SPEI_12_Sept,y=weight_volume,colour=ecosystem))+
+  scale_color_manual(values=c("olivedrab4","grey30","khaki3","steelblue3"))+
+  facet_grid(rows = vars(ecosystem))+ #scales="free_y")+
+  geom_point()+
+  geom_smooth(formula=y~poly(x,2),method="lm")+
+  xlab("SPEI aridity index")+
+  ylab(bquote('Belowground net primary production (g '*~m^-3~y^-1*')'))+
+  theme_minimal()+
+  #ylim(0,7.25)+
+  xlim(-2,2)+
+  theme(legend.position = "none")
+#export graph
+ggsave("root_controls_raw.jpg",dpi=500,width=4,height=10)
 
 ## Effect size by depth --------------
 # How do depths differ in root biomass?
@@ -278,6 +394,35 @@ ggplot(root_controls_mean,aes(x=Date,y=mean,colour=ecosystem))+
   theme_minimal()+
   theme(legend.position = "none")
 ggsave("time_root_controls.tiff",dpi=300,device=NULL,width=10,height=10)
+
+## Supplement: Make a time series plot of SPEI within each ecosystem
+# and test for temporal autocorrelation within the predictor
+#make a time plot
+summary(root_controls$ecosystem)
+summary(root_controls$year.f)
+SPEI<- data.frame(root_controls %>% group_by(ecosystem, Date) %>%  dplyr::summarize(avgSPEI = mean(SPEI_12_Sept, na.rm = TRUE)))
+str(SPEI)               
+
+# look for temporal autocorrelation in the predictor
+acf(SPEI$avgSPEI, lag.max = NULL,
+    type = c("correlation", "covariance", "partial"),
+    plot = TRUE, na.action = na.omit, demean = TRUE)
+
+pacf(SPEI$avgSPEI, na.action = na.omit)
+
+# plot SPEI over time for the two met stations, but showing all 4 ecosystems for consistency
+ggplot(SPEI, aes(x=Date,y=avgSPEI))+
+  scale_color_manual(values=c("olivedrab4","grey30","khaki3","steelblue3"))+
+  facet_grid(rows = vars(ecosystem))+
+  geom_line(aes(colour=ecosystem),size=0.5)+
+  geom_point(aes(colour=ecosystem), size=1)+
+  xlab("Time")+
+  ylab("Standardized Precipitation Evapotranspiration Index (SPEI)")+
+  theme_minimal()+
+  theme(legend.position = "none")
+ggsave("time_SPEI.jpg",dpi=1200,device=NULL,width=6,height=6)
+
+
 
 ##### Question (2)  Monsoon Rainfall Manipulation Experiment -----------------
 ## Question (2): Does the intraannual rainfall regime alter the sensitivity 
